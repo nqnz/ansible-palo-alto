@@ -1,0 +1,91 @@
+---
+- name: Configure Palo Alto firewall
+  hosts: all
+  connection: local
+  gather_facts: no
+  vars:
+    provider:
+      ip_address: "{{ ansible_host }}"
+      username: "{{ ansible_user }}"
+      password: "{{ ansible_password }}"
+  tasks:
+    - name: Create WAN Zone
+      paloaltonetworks.panos.panos_zone:
+        provider: "{{ provider }}"
+        name: "WAN"
+        mode: "layer3"
+        state: "present"
+
+    - name: Create LAN Zone
+      paloaltonetworks.panos.panos_zone:
+        provider: "{{ provider }}"
+        name: "LAN"
+        mode: "layer3"
+        state: "present"
+
+    - name: Add Interface Management Profile
+      paloaltonetworks.panos.panos_management_profile:
+        provider: "{{ provider }}"
+        name: "LAN-MGMT-Profile"
+        https: true
+        ssh: true
+        ping: true
+
+    - name: Configure WAN Interface
+      paloaltonetworks.panos.panos_interface:
+        provider: "{{ provider }}"
+        name: "{{ WAN_INTERFACE }}"
+        mode: "layer3"
+        zone: "WAN"
+        ip: "{{ WAN_IP }}"
+    
+    - name: Configure LAN Interface
+      paloaltonetworks.panos.panos_interface:
+        provider: "{{ provider }}"
+        name: "{{ LAN_INTERFACE }}"
+        mode: "layer3"
+        zone: "LAN"
+        ip: "{{ LAN_IP }}"
+
+    - name: Create Virtual Router and Add Interfaces
+      paloaltonetworks.panos.panos_virtual_router:
+        provider: "{{ provider }}"
+        name: "default-vr"
+        interfaces:
+          - "{{ WAN_INTERFACE }}"
+
+    - name: Configure Static Route
+      paloaltonetworks.panos.panos_static_route:
+        provider: "{{ provider }}"
+        name: "default-route"
+        destination: "0.0.0.0/0"
+        nexthop_type: "ip-address"
+        nexthop: "{{ GW_IP }}"
+        virtual_router: "default-vr"
+
+    - name: Add NAT Policy
+      paloaltonetworks.panos.panos_nat_rule:
+        provider: "{{ provider }}"
+        rule_name: "LAN-to-WAN-NAT"
+        source_zone: ["LAN"]
+        destination_zone: ["WAN"]
+        source: ["any"]
+        destination: ["any"]
+        service: "any"
+        nat_type: "ipv4"
+        snat_type: "dynamic-ip-and-port"
+        snat_address_type: "interface-address"
+        interface: "{{ WAN_INTERFACE }}"
+
+    - name: Add Security Rule for LAN to WAN
+      paloaltonetworks.panos.panos_security_rule:
+        provider: "{{ provider }}"
+        rule_name: "LAN-to-WAN-Allow-All"
+        source_zone: ["LAN"]
+        destination_zone: ["WAN"]
+        source_ip: ["any"]
+        destination_ip: ["any"]
+        application: ["any"]
+        service: ["any"]
+        action: "allow"
+        state: "present"
