@@ -57,18 +57,18 @@
         virtual_router: "default"
 
     - name: Add NAT Policy
-      paloaltonetworks.panos.panos_nat_rule:
+      paloaltonetworks.panos.panos_nat_rule2:
         provider: "{{ provider }}"
         rule_name: "LAN-to-WAN-NAT"
-        source_zone: ["LAN"]
-        destination_zone: ["WAN"]
+        from_zones: ["LAN"]
+        to_zones: ["WAN"]
         source: ["any"]
         destination: ["any"]
         service: "any"
         nat_type: "ipv4"
-        snat_type: "dynamic-ip-and-port"
-        snat_address_type: "interface-address"
-        interface: "{{ WAN_INTERFACE }}"
+        source_translation_type: "dynamic-ip-and-port"
+        source_translation_address_type: "interface-address"
+        source_translation_interface: "{{ WAN_INTERFACE }}"
 
     - name: Add Security Rule for LAN to WAN
       paloaltonetworks.panos.panos_security_rule:
