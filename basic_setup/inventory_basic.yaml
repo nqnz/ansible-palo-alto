@@ -11,6 +11,6 @@ all:
     LAN_IP: null
     GW_IP: null
 
-    WAN_INTERFACE: ethernet1/2
-    LAN_INTERFACE: ethernet1/3
+    WAN_INTERFACE: ethernet1/1
+    LAN_INTERFACE: ethernet1/2
 
