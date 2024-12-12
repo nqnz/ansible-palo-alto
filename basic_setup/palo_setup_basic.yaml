@@ -47,13 +47,6 @@
         zone: "LAN"
         ip: "{{ LAN_IP }}"
 
-    - name: Create Virtual Router and Add Interfaces
-      paloaltonetworks.panos.panos_virtual_router:
-        provider: "{{ provider }}"
-        name: "default-vr"
-        interfaces:
-          - "{{ WAN_INTERFACE }}"
-
     - name: Configure Static Route
       paloaltonetworks.panos.panos_static_route:
         provider: "{{ provider }}"
@@ -61,7 +54,7 @@
         destination: "0.0.0.0/0"
         nexthop_type: "ip-address"
         nexthop: "{{ GW_IP }}"
-        virtual_router: "default-vr"
+        virtual_router: "default"
 
     - name: Add NAT Policy
       paloaltonetworks.panos.panos_nat_rule:
