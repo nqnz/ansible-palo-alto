@@ -47,6 +47,19 @@
         mode: "layer3"
         zone: "LAN"
         ip: "{{ LAN_IP }}"
+        
+    - name: Configure DHCP Server on LAN Interface
+      paloaltonetworks.panos.panos_dhcp_server:
+        provider: "{{ provider }}"
+        interface: "{{ LAN_INTERFACE }}"
+        enabled: true
+        lease_time: "3600"
+        default_gateway: "{{ LAN_IP }}"
+        dns_primary: "{{ DNS_1 }}"
+        dns_secondary: "{{ DNS_2 }}"
+        ip_pool_start: "{{ DHCP_START }}"
+        ip_pool_end: "{{ DHCP_END }}"
+    
 
     - name: Configure Static Route
       paloaltonetworks.panos.panos_static_route:
